@@ -23,7 +23,7 @@ echo "
 rm -rf ./ttnode;
 rm -f ./ttnode.zip;
 sleep 2s
-wget https://gitee.com/zhang0510/ttnode_server/attach_files/908180/download/ttnode.zip
+wget https://gitee.com/zhang0510/ttnode_server/attach_files/908203/download/ttnode.zip
 unzip ttnode.zip
 
 
