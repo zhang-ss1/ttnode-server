@@ -23,11 +23,11 @@ echo "
 rm -rf ./ttnode;
 rm -f ./ttnode.zip;
 sleep 2s
-wget https://gitee.com/zhang0510/ttnode_server/attach_files/902622/download/ttnode.zip
+wget https://gitee.com/zhang0510/ttnode_server/attach_files/908180/download/ttnode.zip
 unzip ttnode.zip
 
 
-#选择安装甜糖的arm版本
+#选择安装甜糖服务的arm版本
 sleep 1s;
 choose='ture';
 while [ $choose == 'ture' ] ;do
@@ -35,28 +35,21 @@ read -p "
 ======================================================================================
 请输入要安装甜糖服务的系统版本：
 
-1.n1、玩客云、我家云、r3300l等armbian系统，请输入1（默认）
+1.n1、玩客云、我家云、r3300l等armbian系统（包含玩客云原系统root），请输入1（默认）
 
 2.alpine(x86)系统,请输入2
-
-3.玩客云原系统root,请输入3
 ======================================================================================
-请输入数字1-3（默认为1）：" startchoose
+请输入数字1-2（默认为1）：" startchoose
 if [[ ${startchoose} == 1 || ${startchoose} == '' ]];then
 sleep 1s;
 choose='false';
-chmod 755 ./ttnode/arm/tt_run.sh;
-./ttnode/arm/tt_run.sh;
+chmod 755 ./ttnode/armbian/tt_run.sh;
+./ttnode/armbian/tt_run.sh;
 elif [[ ${startchoose} == 2 ]];then
 sleep 1s;
 choose='false';
 chmod 755 ./ttnode/alpine/tt_run.sh;
 ./ttnode/alpine/tt_run.sh;
-elif [[ ${startchoose} == 3 ]];then
-sleep 1s;
-choose='false';
-chmod 755 ./ttnode/wky/tt_run.sh;
-./ttnode/wky/tt_run.sh;
 else
 echo "
 
