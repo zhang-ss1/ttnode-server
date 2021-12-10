@@ -10,28 +10,52 @@
             display: inline-block;
             text-decoration: none;
             font-size: 18px;
-            margin: 10px auto;
+            margin: 10px 20px;
+        }
+        body {
+            background-color: #eceaea;
         }
         .header{
+            
             height: 50px;
-            width: 195px;
-            margin: 20px auto;
+            width: 80%;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            text-align: center;
+            line-height: 50px;
+        }
+        span {
+            height: 50px;
+            left: 43%;
+            font-size: 32px;
+            
+            /* background-color: red; */
+            font-weight: 700;
+
         }
         .context {
-            margin: 20px auto;
-            width: 80%;    
+            background-color: #fff;
+            margin: 40px auto;
+            width: 80%;
+            border-radius: 10px;    
         }
         p {
             font-size: 18px;
-            margin: 20px auto;
+            padding-bottom: 10px;
+            margin: 20px 20px;
         }
         a:visited {
             color:blue;
         }
+        h2 {
+            margin: 20px 20px;
+            padding-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h1>甜糖服务部署</h1></div>
+    <div class="header"><span>甜糖服务部署</span></div>
     <div class="context">
         <h2>如何使用甜糖服务部署脚本</h2>
         <p>
@@ -39,13 +63,14 @@
             <br><br>
             2.登录ssh，输入命令：wget https://zhang-ss1.github.io/ttnode-server/tt_start.sh;chmod 755 ./tt_start.sh;./tt_start.sh
         </p>
-        <br>
+    </div>
+    <div class="context">
         <h2>详细教程：</h2>
         <a href="https://www.right.com.cn/forum/thread-7215307-1-1.html">1.armbian/alpine（x86）部署甜糖服务脚本</a>
         <br>
         <a href="https://www.right.com.cn/forum/thread-4060057-1-1.html">2.虚拟机安装甜糖教程</a>
-        <br>
-        <br>
+    </div>
+    <div class="context">
         <h2>仓库地址：</h2>
         <a href="https://gitee.com/zhang0510/ttnode_server">1.甜糖服务部署脚本仓库</a>
     </div>
