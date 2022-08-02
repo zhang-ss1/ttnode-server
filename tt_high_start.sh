@@ -11,9 +11,8 @@ echo "
 
 rm -rf ./ttnode-docker-high;
 rm -f ./ttnode-docker-high.zip;
-docker rm -f ttnode;
 sleep 2s
-wget https://gitee.com/zhang0510/ttnode_server/attach_files/1141652/download/ttnode-docker-high.zip
+wget https://gitee.com/zhang0510/ttnode_server/attach_files/1145223/download/ttnode-docker-high.zip
 unzip ttnode-docker-high.zip
 
 
@@ -39,9 +38,7 @@ echo "
 
 ======================================================================================
 
-安装完成，请输入reboot重启系统，系统重启后，输入/root/tt_info.sh(或docker logs ttnode)查看二维码
-
-若未出现二维码，请等待1分钟左右，再次输入上述命令
+部署完成，请浏览器输入“ http://主机ip:1024  ”进行二维码扫码绑定、业务选择及高质量通道选择等操作！！！
 
 ======================================================================================
 
