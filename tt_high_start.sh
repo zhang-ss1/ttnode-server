@@ -12,7 +12,7 @@ echo "
 rm -rf ./ttnode-docker-high;
 rm -f ./ttnode-docker-high.zip;
 sleep 2s
-wget https://gitee.com/zhang0510/ttnode_server/attach_files/1145223/download/ttnode-docker-high.zip
+wget https://gitee.com/zhang0510/ttnode_server/attach_files/1145253/download/ttnode-docker-high.zip
 unzip ttnode-docker-high.zip
 
 
@@ -38,7 +38,9 @@ echo "
 
 ======================================================================================
 
-部署完成，请浏览器输入“ http://主机ip:1024  ”进行二维码扫码绑定、业务选择及高质量通道选择等操作！！！
+部署完成，请浏览器输入“ http://$(ip route get 1.2.3.4 | awk '{print $7}'):1024 ”进行二维
+
+码扫码绑定、业务选择及高质量通道选择等操作！！！
 
 ======================================================================================
 
