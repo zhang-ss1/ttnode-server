@@ -15,7 +15,7 @@ echo "
 rm -rf ./ttnode-docker-high;
 rm -f ./ttnode-docker-high.zip;
 sleep 2s
-wget https://gitee.com/zhang0510/ttnode_server/attach_files/1145514/download/ttnode-docker-high.zip
+wget https://gitee.com/zhang0510/ttnode_server/releases/download/docker-high/ttnode-docker-high.zip
 unzip ttnode-docker-high.zip
 
 
@@ -70,10 +70,10 @@ echo "
 ======================================================================================
 
 ";
-docker rm -f ttnode >& /dev/null || echo 'remove ttnode container'
-docker rm -f tiptime_wsv >& /dev/null || echo 'remove tiptime_wsv container'
-docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest >& /dev/null || echo 'remove tiptime/ttnode from ali'
-docker rmi -f tiptime/ttnode:latest >& /dev/null || echo 'remove tiptime/ttnode from dockerhub'
+docker rm -f ttnode  >/dev/null 2>&1 || echo 'remove ttnode container'
+docker rm -f tiptime_wsv  >/dev/null 2>&1 || echo 'remove tiptime_wsv container'
+docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
+docker rmi -f tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
 
 docker run --privileged -d \
   -v /mnts/ttnode:/mnt/data/ttnode \
@@ -112,8 +112,8 @@ echo "
 ======================================================================================
 
 ";
-docker rm -f wxedge >& /dev/null || echo 'remove ttnode container'
-docker rmi -f registry.hub.docker.com/onething1/wxedge:latest >& /dev/null || echo 'remove tiptime/ttnode from dockerhub'
+docker rm -f wxedge  >/dev/null 2>&1 || echo 'remove wxedge container'
+docker rmi -f registry.hub.docker.com/onething1/wxedge:latest  >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
 
 
 docker run \
@@ -163,7 +163,7 @@ read -p "
 
 	6.更新甜糖容器
 
-	7.清除容器魔方缓存
+	7.清除容器魔方缓存(不删除绑定信息，会删除所有业务缓存)
 
 	8.删除容器魔方容器
 
@@ -237,18 +237,21 @@ sleep 2s;
 
 elif [[ ${beforestart} == 4 ]];then
 sleep 1s;
-docker stop $(docker ps -q)
+echo '正在停止甜糖容器...';
+docker stop ttnode >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
 sleep 1s;
+echo '删除缓存中...';
 rm -rf /mnts/ttnode/.yfnode/cache;
 sleep 1s;
-docker start $(docker ps -a -q)
+echo '正在启动甜糖容器...';
+docker start ttnode >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
  
 elif [[ ${beforestart} == 5 ]];then
 sleep 1s;
-docker rm -f ttnode ||  echo 'remove ttnode container'
-docker rm -f tiptime_wsv ||  echo 'remove tiptime_wsv container'
-docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest || echo 'remove tiptime/ttnode from ali'
-docker rmi -f tiptime/ttnode:latest || echo 'remove tiptime/ttnode from dockerhub'
+docker rm -f ttnode >/dev/null 2>&1 || echo 'remove ttnode container'
+docker rm -f tiptime_wsv >/dev/null 2>&1 || echo 'remove tiptime_wsv container'
+docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
+docker rmi -f tiptime/ttnode:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
 
 elif [[ ${beforestart} == 6 ]];then
 sleep 1s;
@@ -256,16 +259,19 @@ startTtnodesever
 
 elif [[ ${beforestart} == 7 ]];then
 sleep 1s;
-docker stop $(docker ps -q)
-sleep 1s;
-rm -rf /mnts/wxedge1;
-sleep 1s;
-docker start $(docker ps -a -q)
+echo '正在停止容器魔方...';
+docker stop wxedge >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
+sleep 2s;
+echo '删除缓存中...';
+rm -rf /mnts/wxedge1/.onething_data/task;
+sleep 2s;
+echo '正在启动容器魔方...';
+docker start wxedge >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
 
 elif [[ ${beforestart} == 8 ]];then
 sleep 1s;
-docker rm -f wxedge >& echo 'remove ttnode container'
-docker rmi -f registry.hub.docker.com/onething1/wxedge:latest || 'remove tiptime/ttnode from dockerhub'
+docker rm -f wxedge >/dev/null 2>&1 || echo 'remove wxedge container'
+docker rmi -f registry.hub.docker.com/onething1/wxedge:latest >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
 
 elif [[ ${beforestart} == 9 ]];then
 sleep 1s;
