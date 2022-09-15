@@ -12,7 +12,7 @@ echo "
 rm -rf ./ttnode-docker-high;
 rm -f ./ttnode-docker-high.zip;
 sleep 2s
-wget https://gitee.com/zhang0510/ttnode_server/attach_files/1145514/download/ttnode-docker-high.zip
+wget https://gitee.com/zhang0510/ttnode_server/releases/download/docker-high/ttnode-docker-high.zip
 unzip ttnode-docker-high.zip
 
 
