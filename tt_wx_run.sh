@@ -42,6 +42,9 @@ sleep 2s;
 rm -rf ./ttnode-docker-high;
 rm -f ./ttnode-docker-high.zip;
 
+#关闭交换内存
+swapoff -a
+
 #安装相关应用
 sleep 2s;
 apk update;
@@ -52,7 +55,7 @@ rc-update add docker boot;
 sleep 2s;
 service docker start;
 sleep 2s;
-mkdir /mnt >& /dev/null ;
+mkdir /mnts >& /dev/null ;
 sleep 2s;
 }
 
