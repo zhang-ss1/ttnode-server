@@ -123,9 +123,97 @@ echo "
 }
 
 
+
+#删除容器魔方缓存
+deleteWxedgeTaskCache() {
+clear;
+choosedeletetask='ture';
+while [ $choosedeletetask == 'ture' ] ;do
+read -p "
+======================================================================================
+
+ 请输入序号，删除对应业务的所有缓存
+
+	1.B网盘
+	2.CB*	
+	3.CG*
+	4.CX*
+	5.CY
+	6.CYK
+	7.Z
+	8.删除所有缓存
+	9.退出
+
+======================================================================================
+
+
+请选择相应的数字进行操作：" deletecache
+
+if [[ ${deletecache} == 1 ]];then
+sleep 2s;
+echo '删除缓存中...';
+sleep 2s;
+rm -rf $StoragePath/.onething_data/task/984017bcbfc37757a79ff41324d54008*;
+
+elif [[ ${deletecache} == 2 ]];then
+sleep 2s;
+echo '删除缓存中...';
+sleep 2s;
+rm -rf $StoragePath/.onething_data/task/5b442b259766008357b638af7d07d18a*;
+
+elif [[ ${deletecache} == 3 ]];then
+sleep 2s;
+echo '删除缓存中...';
+sleep 2s;
+rm -rf $StoragePath/.onething_data/task/bae5a079ee6d7ac69ea2ac8cec142662*;
+
+elif [[ ${deletecache} == 4 ]];then
+sleep 2s;
+echo '删除缓存中...';
+sleep 2s;
+rm -rf $StoragePath/.onething_data/task/e9b6850481e687306e41eb10b26e70bd*;
+
+elif [[ ${deletecache} == 5 ]];then
+sleep 2s;
+echo '删除缓存中...';
+sleep 2s;
+rm -rf $StoragePath/.onething_data/task/34341e4c1d629e9ea0336960a9f5d2a8*;
+
+elif [[ ${deletecache} == 6 ]];then
+sleep 2s;
+echo '删除缓存中...';
+sleep 2s;
+rm -rf $StoragePath/.onething_data/task/a040bc3e8db50b750167b22cf3e908fa*;
+
+elif [[ ${deletecache} == 7 ]];then
+sleep 2s;
+echo '删除缓存中...';
+sleep 2s;
+rm -rf $StoragePath/.onething_data/task/18e5e85d32df5a474f509aa86bcf0015*;
+
+elif [[ ${deletecache} == 8 ]];then
+sleep 2s;
+echo '删除缓存中...';
+sleep 2s;
+rm -rf $StoragePath/.onething_data/task/*;
+
+else
+echo "
+
+退出删除缓存
+";
+sleep 2s;
+choosedeletetask='false';
+fi
+done
+}
+
+
 #开始前的说明
 sleep 1s;
 clear;
+choosetask='ture';
+while [ $choosetask == 'ture' ] ;do
 read -p "
 ======================================================================================
 
@@ -134,19 +222,12 @@ read -p "
   请输入下列序号，进行相应操作
 
 	1.部署/更新甜糖容器
-
-	2.部署/更新甜糖容器（高质量通道，只适用于x86，详情请访问甜糖官网）
-	
-	3.清除甜糖缓存（适用于旧业务，不会删除绑定信息）
-
+	2.部署/更新甜糖容器（高质量通道，只适用于x86，详情请访问甜糖官网）	
+	3.清除甜糖缓存（适用于旧业务，不删除绑定信息）
 	4.删除甜糖容器
-
 	5.部署/更新容器魔方容器
-
-	6.清除容器魔方缓存(不会删除绑定信息，会删除所有缓存)
-
+	6.清除容器魔方缓存(不删除绑定信息)
 	7.删除容器魔方容器
-
 	8.退出
 
 ======================================================================================
@@ -202,11 +283,11 @@ sleep 1s;
 echo '正在停止容器魔方...';
 docker stop wxedge >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
 sleep 2s;
-echo '删除缓存中...';
-rm -rf $1/.onething_data/task;
+deleteWxedgeTaskCache;
 sleep 2s;
 echo '正在启动容器魔方...';
 docker start wxedge >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
+sleep 2s;
 
 elif [[ ${beforestart} == 7 ]];then
 sleep 1s;
@@ -218,10 +299,8 @@ echo "
 
 退出安装脚本
 ";
-sleep 5s;
+sleep 3s;
+choosetask='false';
 fi
-
-
-
-
+done
 
