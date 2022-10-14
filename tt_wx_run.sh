@@ -1,46 +1,230 @@
-
 #初始化alpine环境
 startEvn() {
-#下载必要文件
-sleep 1s
+mkdir /usr/node
+sleep 1s;
+#添加格式化硬盘脚本
+echo -e 'sleep 1s;
+choose=\x27ture\x27;
+while [ $choose == \x27ture\x27 ] ;do
 clear;
+read -p "
+
+=========================================================================================================
+
+初次挂载硬盘、调整硬盘容量、更换硬盘后都要对硬盘进行重新分区及格式化，请按照提示
+选择是否格式化,若多次初始化硬盘不成功，请重启系统或检查硬盘是否已经挂载！！！
+
+1.不对硬盘进行格式化，请输入1
+
+2.对硬盘进行格式化，请输入2
+
+=========================================================================================================
+
+请输入数字1-2：" formatchoose
+
+if [[ ${formatchoose} == 1 || ${formatchoose} == \x27\x27 ]];then
+sleep 1s;
+choose=\x27false\x27;
+sleep 1s;
+
+elif [[ ${formatchoose} == 2 ]];then
+sleep 1s;
 echo "
 
-======================================================================================
-正在下载甜糖/容器魔方脚本文件，请稍等。。。
-======================================================================================
+硬盘正在格式化，请稍等。。。
 
+"
+sleep 1s;
+if grep -qs \x27/dev/sda1\x27 /proc/mounts; then
+
+#/dev/sda1被挂载，将判断/dev/sdb1是被挂载
+sleep 1s;
+if grep -qs \x27/dev/sdb1\x27 /proc/mounts; then
+sleep 1s;
+echo "
+
+未发现可以被格式化的硬盘，10s后将自动返回格式化硬盘界面
+
+"
+sleep 10s;
+
+#/dev/sdb1未被挂载，将进行格式化
+else
+echo "n
+
+p
+
+1
+
+ 
+
+ 
+
+w
+
+"|fdisk -u /dev/sdb;
+mkfs.ext4 /dev/sdb1;
+sleep 1s;
+choose=\x27false\x27;
+echo "
+
+格式化完成，脚本将会在10s后继续执行，请稍等
+
+"
+sleep 10s;
+fi
+#/dev/sda1未被挂载，将进行格式化
+else
+echo "n
+
+p
+
+1
+
+ 
+
+ 
+
+w
+
+"|fdisk -u /dev/sda;
+mkfs.ext4 /dev/sda1;
+sleep 1s;
+choose=\x27false\x27;
+echo "
+
+格式化完成，脚本将会在10s后继续执行，请稍等
+
+"
+sleep 10s;
+fi
+
+else
+echo "
+
+输入错误，5s后请重新选择，或按ctrl+c退出安装命令
 ";
+sleep 5s;
+fi
+done
+exit 0' > /usr/node/automkfs.sh
 
-rm -rf ./ttnode-docker-high;
-rm -f ./ttnode-docker-high.zip;
-sleep 2s
-wget https://gitee.com/zhang0510/ttnode_server/releases/download/docker-high/ttnode-docker-high.zip
-unzip ttnode-docker-high.zip
+#添加自动挂载脚本
+echo -e '#!/bin/sh
+#automount
 
+function automount()
+{
+    mkdir /mnts;
+    if grep -qs \x27/mnts\x27 /proc/mounts; then
+        echo "/mnts is mounted"
+    else
+        mountsda
+    fi
+}
 
-#删除可能存在的旧文件
-sleep 1s;
-rm -rf /usr/node;
-rm -f /etc/apk/repositories;
-rm -f /etc/local.d/mount.start;
+function mountsda()
+{
+    if grep -qs \x27/dev/sda1\x27 /proc/mounts; then
+        echo "/dev/sda1 is mounted";
+        mountsdb
+     else 
+        mount /dev/sda1 /mnts;
+        if grep -qs \x27/mnts\x27 /proc/mounts; then
+            echo "/mnts is mounted";
+        else
+            mountsdb
+        fi
+    fi
+}
 
-#移入甜糖所需文件
-sleep 1s;
-mv ./ttnode-docker-high/ttnode/alpine/node /usr/;
-sleep 1s;
+function mountsdb()
+{
+    if grep -qs \x27/dev/sdb1\x27 /proc/mounts; then
+        echo "/dev/sdb1 is mounted";
+        mountmmcblk0
+    else 
+        mount /dev/sdb1 /mnts;
+        if grep -qs \x27/mnts\x27 /proc/mounts; then
+            echo "/mnts is mounted";
+        else
+            mountmmcblk0
+        fi
+    fi
+}
+
+function mountmmcblk0()
+{
+    if grep -qs \x27/dev/mmcblk0p1\x27 /proc/mounts; then
+        echo "/dev/mmcblk0p1 is mounted";
+        mountmmcblk1
+    else 
+        mount /dev/mmcblk0p1 /mnts;
+        if grep -qs \x27/mnts\x27 /proc/mounts; then
+            echo "/mnts is mounted";
+        else
+            mountmmcblk1
+        fi
+    fi
+}
+
+function mountmmcblk1()
+{
+    if grep -qs \x27/dev/mmcblk1p1\x27 /proc/mounts; then
+        echo "/dev/mmcblk1p1 is mounted";
+        mountmmcblk2
+    else
+        mount /dev/mmcblk1p1 /mnts;
+        if grep -qs \x27/mnts\x27 /proc/mounts; then
+            echo "/mnts is mounted";
+        else
+            mountmmcblk2
+        fi
+    fi
+}
+
+function mountmmcblk2()
+{
+    if grep -qs \x27/dev/mmcblk1p2\x27 /proc/mounts; then
+        echo "/dev/mmcblk1p2 is mounted";
+        mountfail
+    else 
+        mount /dev/mmcblk2p1 /mnts;
+        if grep -qs \x27/mnts\x27 /proc/mounts; then
+            echo "/mnts is mounted";
+        else
+            mountfail
+        fi
+    fi
+}
+
+function mountfail()
+{
+    clear
+    echo "
+
+    ===========================================================================
+
+    未找到合适的硬盘挂载到/mnts目录，请检查是否插入存储设备和存储设备是否格式化，
+    10s后将自动结束挂载，挂载脚本所在目录：/usr/node下，可在脚本结束后手动执行。
+
+    注意：此脚本只会按sda1>sdb1>mmcblk0p1>mmcblk1p1>mmcblk2p1的顺序挂载分区，
+    若有其他分区，不会自动挂载
+
+    ============================================================================
+
+    "
+    sleep 10s;
+} 
+automount
+' > /usr/node/mount.sh
 chmod 777 -R /usr/node;
-#sleep 1s;
-mv -f ./ttnode-docker-high/ttnode/alpine/mount.start /etc/local.d; #移入开机自动挂载硬盘
-sleep 1s;
-chmod +x /etc/local.d/mount.start;
-sleep 1s;
-rc-update add local;
-sleep 1s;
-mv -f ./ttnode-docker-high/ttnode/alpine/repositories /etc/apk/; #替换软件源
-sleep 2s;
-rm -rf ./ttnode-docker-high;
-rm -f ./ttnode-docker-high.zip;
+
+#修改软件源
+echo '#/media/cdrom/apks
+https://mirrors.ustc.edu.cn/alpine/latest-stable/main
+https://mirrors.ustc.edu.cn/alpine/latest-stable/community' > /etc/apk/repositories
+
 
 #关闭交换内存
 swapoff -a
@@ -73,10 +257,30 @@ echo "
 ======================================================================================
 
 ";
-docker rm -f ttnode  >/dev/null 2>&1 || echo 'remove ttnode container'
-docker rm -f tiptime_wsv  >/dev/null 2>&1 || echo 'remove tiptime_wsv container'
-docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
-docker rmi -f tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
+#添加开机自动执行脚本
+echo -e 'sleep 2s
+swapoff -a
+sleep 2s
+/usr/node/mount.sh
+sleep 5s
+if [[ "$(docker inspect ttnode 2> /dev/null | grep \x27"Name": "/ttnode"\x27)" != "" ]];
+then
+docker restart $(docker ps -q)
+else
+docker run --privileged -d \
+  -v /mnts/ttnode:/mnt/data/ttnode \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /proc:/host/proc:ro \
+  --name ttnode \
+  --hostname ttnode \
+  --net=host \
+  -e mode=high \
+  --restart=always \
+  registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest
+fi' > /etc/local.d/mount.start
+chmod +x /etc/local.d/mount.start;
+sleep 1s;
+rc-update add local;
 
 docker run --privileged -d \
   -v /mnts/ttnode:/mnt/data/ttnode \
@@ -116,8 +320,31 @@ echo "
 ======================================================================================
 
 ";
-docker rm -f wxedge  >/dev/null 2>&1 || echo 'remove wxedge container'
-docker rmi -f registry.hub.docker.com/onething1/wxedge:latest  >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
+#添加开机自动执行脚本
+echo -e 'sleep 2s
+swapoff -a
+sleep 2s
+/usr/node/mount.sh
+sleep 5s
+if [[ "$(docker inspect wxedge 2> /dev/null | grep \x27"Name": "/wxedge"\x27)" != "" ]];
+then
+docker restart $(docker ps -q)
+else
+docker run \
+--name=wxedge \
+--restart=always \
+--privileged \
+--net=host \
+--tmpfs /run \
+--tmpfs /tmp \
+-v /mnts/wxedge1/containerd:/var/lib/containerd \
+-v /mnts/wxedge1:/storage:rw \
+-d \
+registry.hub.docker.com/onething1/wxedge:latest
+fi' > /etc/local.d/mount.start
+chmod +x /etc/local.d/mount.start;
+sleep 1s;
+rc-update add local;
 
 
 docker run \
@@ -130,7 +357,7 @@ docker run \
 -v /mnts/wxedge1/containerd:/var/lib/containerd \
 -v /mnts/wxedge1:/storage:rw \
 -d \
-registry.hub.docker.com/onething1/wxedge
+registry.hub.docker.com/onething1/wxedge:latest
 
 sleep 10s;
 echo "
@@ -349,12 +576,18 @@ docker start ttnode >/dev/null 2>&1 || echo '容器不存在，不影响删除�
  
 elif [[ ${beforestart} == 5 ]];then
 sleep 1s;
+rm -rf /etc/local.d/mount.start;
 docker rm -f ttnode >/dev/null 2>&1 || echo 'remove ttnode container'
 docker rm -f tiptime_wsv >/dev/null 2>&1 || echo 'remove tiptime_wsv container'
 docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
 docker rmi -f tiptime/ttnode:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
 
 elif [[ ${beforestart} == 6 ]];then
+sleep 1s;
+docker rm -f ttnode  >/dev/null 2>&1 || echo 'remove ttnode container'
+docker rm -f tiptime_wsv  >/dev/null 2>&1 || echo 'remove tiptime_wsv container'
+docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
+docker rmi -f tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
 sleep 1s;
 startTtnodesever
 
@@ -371,11 +604,14 @@ docker start wxedge >/dev/null 2>&1 || echo '容器不存在，不影响删除�
 
 elif [[ ${beforestart} == 8 ]];then
 sleep 1s;
+rm -rf /etc/local.d/mount.start;
 docker rm -f wxedge >/dev/null 2>&1 || echo 'remove wxedge container'
 docker rmi -f registry.hub.docker.com/onething1/wxedge:latest >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
 
 elif [[ ${beforestart} == 9 ]];then
 sleep 1s;
+docker rm -f wxedge  >/dev/null 2>&1 || echo 'remove wxedge container'
+docker rmi -f registry.hub.docker.com/onething1/wxedge:latest  >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
 startWxedgeSever
 
 else
