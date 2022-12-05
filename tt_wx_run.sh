@@ -245,8 +245,8 @@ sleep 2s;
 
 
 
-#部署甜糖服务
-startTtnodesever() {
+#部署甜糖服务（高质量通道）
+startHighTtnodesever() {
 clear;
 echo "
 
@@ -306,6 +306,66 @@ echo "
 exit 0;
 }
 
+
+
+#部署甜糖服务
+startTtnodesever() {
+clear;
+echo "
+
+======================================================================================
+
+正在启动/更新甜糖服务，请耐心等待
+
+======================================================================================
+
+";
+#添加开机自动执行脚本
+echo -e 'sleep 2s
+swapoff -a
+sleep 2s
+/usr/node/mount.sh
+sleep 5s
+if [[ "$(docker inspect ttnode 2> /dev/null | grep \x27"Name": "/ttnode"\x27)" != "" ]];
+then
+docker restart $(docker ps -q)
+else
+docker run --privileged -d \
+  -v /mnts/ttnode:/mnt/data/ttnode \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /proc:/host/proc:ro \
+  --name ttnode \
+  --hostname ttnode \
+  --net=host \
+  --restart=always \
+  registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest
+fi' > /etc/local.d/mount.start
+chmod +x /etc/local.d/mount.start;
+sleep 1s;
+rc-update add local;
+
+docker run --privileged -d \
+  -v /mnts/ttnode:/mnt/data/ttnode \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /proc:/host/proc:ro \
+  --name ttnode \
+  --hostname ttnode \
+  --net=host \
+  --restart=always \
+  registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest
+
+sleep 10s;
+echo "
+
+======================================================================================
+
+部署完成，请浏览器输入“ http://$(ip route get 1.2.3.4 | awk '{print $7}'):1024 ”进行二维码扫码绑定、业务选择及高质量通道选择等操作！！！
+
+======================================================================================
+
+";
+exit 0;
+}
 
 
 #部署网心容器魔方
@@ -483,21 +543,23 @@ choosetask='ture';
 while [ $choosetask == 'ture' ] ;do
 read -p "
 ======================================================================================
-
+更新时间：2022-12-05
 当前脚本只适用于  “X86的alpine系统”  安装甜糖服务/网心容器魔方，若选错了按Ctrl+C即可结束安装
-
+ 
   请输入下列序号，进行相应操作
 	
-	1.一键部署甜糖服务（docker部署，默认开启高质量通道）
-	2.一键部署网心容器魔方
-	3.硬盘分区并格式化（更换缓存盘后使用）
-	4.清除甜糖缓存（不会删除绑定信息）
-	5.删除甜糖容器
-	6.更新甜糖容器
-	7.清除容器魔方缓存(不删除绑定信息)
-	8.删除容器魔方容器
-	9.更新容器魔方容器
-	10.退出
+	1.一键部署甜糖服务（开启高质量通道，内存≥2G，硬盘≥128G，带宽≥100Mbps）
+	2.一键部署甜糖服务（非高质量通道，硬盘≥32G）
+	3.一键部署网心容器魔方
+	4.硬盘分区并格式化（更换缓存盘后使用）
+	5.清除甜糖缓存（不会删除绑定信息）
+	6.删除甜糖容器
+	7.更新甜糖容器（高质量通道）
+	8.更新甜糖容器（非质量通道）
+	9.清除容器魔方缓存(不删除绑定信息)
+	10.删除容器魔方容器
+	11.更新容器魔方容器
+	12.退出
 
 ======================================================================================
 
@@ -523,7 +585,7 @@ echo "
 ";
 /usr/node/mount.sh;
 sleep 2s;
-startTtnodesever
+startHighTtnodesever
 
 elif [[ ${beforestart} == 2 ]];then
 sleep 1s;
@@ -543,9 +605,29 @@ echo "
 ";
 /usr/node/mount.sh;
 sleep 2s;
-startWxedgeSever
+startTtnodesever
 
 elif [[ ${beforestart} == 3 ]];then
+sleep 1s;
+startEvn
+#初始化硬盘
+/usr/node/automkfs.sh;
+sleep 1s;
+#挂载硬盘
+echo "
+
+======================================================================================
+
+正在尝试挂载硬盘，请稍等。。。
+
+======================================================================================
+
+";
+/usr/node/mount.sh;
+sleep 2s;
+startWxedgeSever
+
+elif [[ ${beforestart} == 4 ]];then
 sleep 1s;
 #初始化硬盘
 /usr/node/automkfs.sh;
@@ -563,7 +645,7 @@ echo "
 /usr/node/mount.sh;
 sleep 2s;
 
-elif [[ ${beforestart} == 4 ]];then
+elif [[ ${beforestart} == 5 ]];then
 sleep 1s;
 echo '正在停止甜糖容器...';
 docker stop ttnode >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
@@ -574,24 +656,40 @@ sleep 1s;
 echo '正在启动甜糖容器...';
 docker start ttnode >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
  
-elif [[ ${beforestart} == 5 ]];then
+elif [[ ${beforestart} == 6 ]];then
 sleep 1s;
 rm -rf /etc/local.d/mount.start;
 docker rm -f ttnode >/dev/null 2>&1 || echo 'remove ttnode container'
 docker rm -f tiptime_wsv >/dev/null 2>&1 || echo 'remove tiptime_wsv container'
 docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
+docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode-test:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
 docker rmi -f tiptime/ttnode:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
+docker rmi -f tiptime/ttnode-test:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
 
-elif [[ ${beforestart} == 6 ]];then
+elif [[ ${beforestart} == 7 ]];then
 sleep 1s;
 docker rm -f ttnode  >/dev/null 2>&1 || echo 'remove ttnode container'
 docker rm -f tiptime_wsv  >/dev/null 2>&1 || echo 'remove tiptime_wsv container'
 docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
+docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode-test:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
 docker rmi -f tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
+docker rmi -f tiptime/ttnode-test:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
+sleep 1s;
+startHighTtnodesever
+
+elif [[ ${beforestart} == 8 ]];then
+sleep 1s;
+docker rm -f ttnode  >/dev/null 2>&1 || echo 'remove ttnode container'
+docker rm -f tiptime_wsv  >/dev/null 2>&1 || echo 'remove tiptime_wsv container'
+docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
+docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode-test:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
+docker rmi -f tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
+docker rmi -f tiptime/ttnode-test:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
 sleep 1s;
 startTtnodesever
 
-elif [[ ${beforestart} == 7 ]];then
+
+elif [[ ${beforestart} == 9 ]];then
 sleep 1s;
 echo '正在停止容器魔方...';
 docker stop wxedge >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
@@ -602,13 +700,13 @@ sleep 2s;
 echo '正在启动容器魔方...';
 docker start wxedge >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
 
-elif [[ ${beforestart} == 8 ]];then
+elif [[ ${beforestart} == 10 ]];then
 sleep 1s;
 rm -rf /etc/local.d/mount.start;
 docker rm -f wxedge >/dev/null 2>&1 || echo 'remove wxedge container'
 docker rmi -f registry.hub.docker.com/onething1/wxedge:latest >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
 
-elif [[ ${beforestart} == 9 ]];then
+elif [[ ${beforestart} == 11 ]];then
 sleep 1s;
 docker rm -f wxedge  >/dev/null 2>&1 || echo 'remove wxedge container'
 docker rmi -f registry.hub.docker.com/onething1/wxedge:latest  >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
