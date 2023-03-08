@@ -234,6 +234,11 @@ chmod 777 -R /usr/node;
 
 #修改软件源
 echo '#/media/cdrom/apks
+#http://mirrors.ustc.edu.cn/alpine/v3.15/main
+#http://mirrors.ustc.edu.cn/alpine/v3.15/community
+#http://mirrors.ustc.edu.cn/alpine/edge/main
+#http://mirrors.ustc.edu.cn/alpine/edge/community
+#http://mirrors.ustc.edu.cn/alpine/edge/testing
 https://mirrors.ustc.edu.cn/alpine/latest-stable/main
 https://mirrors.ustc.edu.cn/alpine/latest-stable/community' > /etc/apk/repositories
 
@@ -247,11 +252,13 @@ apk update;
 sleep 2s;
 apk add docker;
 sleep 2s;
+apk add lsblk;
+sleep 2s;
 rc-update add docker boot;
 sleep 2s;
 service docker start;
 sleep 2s;
-mkdir /mnts >& /dev/null ;
+mkdir /mnts;
 sleep 2s;
 }
 
@@ -428,9 +435,21 @@ chmod 600 /etc/crontabs/root;
 #sleep 1s;
 #rc-update add local;
 
+#添加开机自动执行脚本
+echo -e 'sleep 2s
+swapoff -a
+' > /etc/local.d/mount.start
+chmod +x /etc/local.d/mount.start;
+sleep 1s;
+rc-update add local;
+
+
 #初始化硬盘
 /usr/node/automkfs.sh;
 
+
+#关闭交换内存
+swapoff -a
 
 #安装相关应用
 sleep 2s;
@@ -442,8 +461,11 @@ apk add net-tools;
 sleep 2s;
 apk add libqrencode;
 sleep 2s;
-mkdir /mnts >& /dev/null ;
-mkdir /mnts/ttnode >& /dev/null ;
+apk add lsblk;
+sleep 2s;
+mkdir /mnts;
+sleep 2s;
+mkdir /mnts/ttnode;
 sleep 2s;
 echo "
 
