@@ -529,7 +529,6 @@ docker run \
 --net=host \
 --tmpfs /run \
 --tmpfs /tmp \
--v /mnts/wxedge1/containerd:/var/lib/containerd \
 -v /mnts/wxedge1:/storage:rw \
 -d \
 registry.hub.docker.com/onething1/wxedge:latest
@@ -546,7 +545,6 @@ docker run \
 --net=host \
 --tmpfs /run \
 --tmpfs /tmp \
--v /mnts/wxedge1/containerd:/var/lib/containerd \
 -v /mnts/wxedge1:/storage:rw \
 -d \
 registry.hub.docker.com/onething1/wxedge:latest
