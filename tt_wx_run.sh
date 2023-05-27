@@ -531,7 +531,7 @@ docker run \
 --tmpfs /tmp \
 -v /mnts/wxedge1:/storage:rw \
 -d \
-registry.hub.docker.com/onething1/wxedge:latest
+onething1/wxedge:latest
 fi' > /etc/local.d/mount.start
 chmod +x /etc/local.d/mount.start;
 sleep 1s;
@@ -547,7 +547,7 @@ docker run \
 --tmpfs /tmp \
 -v /mnts/wxedge1:/storage:rw \
 -d \
-registry.hub.docker.com/onething1/wxedge:latest
+onething1/wxedge:latest
 
 sleep 10s;
 echo "
@@ -724,12 +724,12 @@ elif [[ ${beforeWxedgeStart} == 3 ]];then
 sleep 1s;
 rm -rf /etc/local.d/mount.start;
 docker rm -f wxedge >/dev/null 2>&1 || echo 'remove wxedge container'
-docker rmi -f registry.hub.docker.com/onething1/wxedge:latest >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
+docker rmi -f onething1/wxedge:latest >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
 
 elif [[ ${beforeWxedgeStart} == 4 ]];then
 sleep 1s;
 docker rm -f wxedge  >/dev/null 2>&1 || echo 'remove wxedge container'
-docker rmi -f registry.hub.docker.com/onething1/wxedge:latest  >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
+docker rmi -f onething1/wxedge:latest  >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
 startWxedgeService
 
 else
