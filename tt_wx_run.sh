@@ -562,7 +562,66 @@ echo "
 exit 0;
 }
 
+startWxedgeService01() {
+clear;
+echo "
 
+======================================================================================
+
+正在部署/更新网心容器魔方，请耐心等待
+
+======================================================================================
+
+";
+#添加开机自动执行脚本
+echo -e 'sleep 2s
+swapoff -a
+sleep 2s
+/usr/node/mount.sh
+sleep 5s
+if [[ "$(docker inspect wxedge 2> /dev/null | grep \x27"Name": "/wxedge"\x27)" != "" ]];
+then
+docker restart $(docker ps -q)
+else
+docker run \
+--name=wxedge \
+--restart=always \
+--privileged \
+--net=host \
+--tmpfs /run \
+--tmpfs /tmp \
+-v /mnts/wxedge1:/storage:rw \
+-d \
+onething1/wxedge:2.4.3
+fi' > /etc/local.d/mount.start
+chmod +x /etc/local.d/mount.start;
+sleep 1s;
+rc-update add local;
+
+
+docker run \
+--name=wxedge \
+--restart=always \
+--privileged \
+--net=host \
+--tmpfs /run \
+--tmpfs /tmp \
+-v /mnts/wxedge1:/storage:rw \
+-d \
+onething1/wxedge:2.4.3
+
+sleep 10s;
+echo "
+
+======================================================================================
+
+部署完成，请浏览器输入“ http://$(ip route get 1.2.3.4 | awk '{print $7}'):18888 ”进行二维码扫码绑定、业务选择等操作！！！
+
+======================================================================================
+
+";
+exit 0;
+}
 
 #删除容器魔方缓存
 deleteWxedgeTaskCache() {
@@ -672,16 +731,17 @@ chooseWxedgeTask='ture';
 while [ $chooseWxedgeTask == 'ture' ] ;do
 read -p "
 ======================================================================================
-更新时间：2023-2-27
+更新时间：2023-6-22
 当前脚本用于  “X86的alpine系统”  安装“网心容器魔方”，若选错了按Ctrl+C即可结束安装
 缓存目录：/mnts/wxedge1（不支持自定义）
   请输入下列序号，进行相应操作
 	
-	1.一键部署网心容器魔方
-	2.清除容器魔方缓存(不删除绑定信息)
-	3.删除容器魔方容器
-	4.更新容器魔方容器
-	5.退出
+	1.一键部署网心容器魔方(最新版，智能业务，不支持自行选择业务)
+	2.一键部署网心容器魔方(2.4.3版，支持自行选择业务)
+	3.清除容器魔方缓存(不删除绑定信息)
+	4.删除容器魔方容器
+	5.更新容器魔方容器
+	6.退出
 
 ======================================================================================
 
@@ -711,6 +771,26 @@ startWxedgeService
 
 elif [[ ${beforeWxedgeStart} == 2 ]];then
 sleep 1s;
+startEvn
+#初始化硬盘
+/usr/node/automkfs.sh;
+sleep 1s;
+#挂载硬盘
+echo "
+
+======================================================================================
+
+正在尝试挂载硬盘，请稍等。。。
+
+======================================================================================
+
+";
+/usr/node/mount.sh;
+sleep 2s;
+startWxedgeService01 
+
+elif [[ ${beforeWxedgeStart} == 3 ]];then
+sleep 1s;
 echo '正在停止容器魔方...';
 docker stop wxedge >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
 sleep 2s;
@@ -720,16 +800,19 @@ sleep 2s;
 echo '正在启动容器魔方...';
 docker start wxedge >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
 
-elif [[ ${beforeWxedgeStart} == 3 ]];then
+elif [[ ${beforeWxedgeStart} == 4 ]];then
 sleep 1s;
 rm -rf /etc/local.d/mount.start;
 docker rm -f wxedge >/dev/null 2>&1 || echo 'remove wxedge container'
 docker rmi -f onething1/wxedge:latest >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
+docker rmi -f onething1/wxedge:2.4.3 >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
 
-elif [[ ${beforeWxedgeStart} == 4 ]];then
+
+elif [[ ${beforeWxedgeStart} == 5 ]];then
 sleep 1s;
 docker rm -f wxedge  >/dev/null 2>&1 || echo 'remove wxedge container'
 docker rmi -f onething1/wxedge:latest  >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
+docker rmi -f onething1/wxedge:2.4.3 >/dev/null 2>&1 || echo 'remove onething1/wxedge from dockerhub'
 startWxedgeService
 
 else
