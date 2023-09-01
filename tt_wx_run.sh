@@ -264,69 +264,6 @@ sleep 2s;
 
 
 
-#部署甜糖服务（高质量通道）
-startHighTtnodeService() {
-clear;
-echo "
-
-======================================================================================
-
-正在启动/更新甜糖服务，请耐心等待
-
-======================================================================================
-
-";
-#添加开机自动执行脚本
-echo -e 'sleep 2s
-swapoff -a
-sleep 2s
-/usr/node/mount.sh
-sleep 5s
-if [[ "$(docker inspect ttnode 2> /dev/null | grep \x27"Name": "/ttnode"\x27)" != "" ]];
-then
-docker restart $(docker ps -q)
-else
-docker run --privileged -d \
-  -v /mnts/ttnode:/mnt/data/ttnode \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /proc:/host/proc:ro \
-  --name ttnode \
-  --hostname ttnode \
-  --net=host \
-  -e mode=high \
-  --restart=always \
-  registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest
-fi' > /etc/local.d/mount.start
-chmod +x /etc/local.d/mount.start;
-sleep 1s;
-rc-update add local;
-
-docker run --privileged -d \
-  -v /mnts/ttnode:/mnt/data/ttnode \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /proc:/host/proc:ro \
-  --name ttnode \
-  --hostname ttnode \
-  --net=host \
-  -e mode=high \
-  --restart=always \
-  registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest
-
-sleep 10s;
-echo "
-
-======================================================================================
-
-部署完成，请浏览器输入“ http://$(ip route get 1.2.3.4 | awk '{print $7}'):1024 ”进行二维码扫码绑定、业务选择及高质量通道选择等操作！！！
-
-======================================================================================
-
-";
-exit 0;
-}
-
-
-
 #部署甜糖服务
 startTtnodeService() {
 clear;
@@ -353,6 +290,8 @@ docker run --privileged -d \
   -v /mnts/ttnode:/mnt/data/ttnode \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /proc:/host/proc:ro \
+  --cap-add SYS_RAWIO \
+  --device /dev/mem \
   --name ttnode \
   --hostname ttnode \
   --net=host \
@@ -367,6 +306,8 @@ docker run --privileged -d \
   -v /mnts/ttnode:/mnt/data/ttnode \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /proc:/host/proc:ro \
+  --cap-add SYS_RAWIO \
+  --device /dev/mem \
   --name ttnode \
   --hostname ttnode \
   --net=host \
@@ -399,8 +340,11 @@ echo "
 sleep 2s;
 rm -rf ./ttnode;
 rm -f ./ttnode.zip;
+rm -rf ./ttmanager.zip
+rm -rf ./ttmanager
 sleep 2s;
 wget https://gitee.com/zhang0510/share/releases/download/v0.0.1/ttnode.zip
+wget https://gitee.com/zhang0510/share/releases/download/amd64/ttmanager.zip
 
 #文件存在则删除
 if [ ! -f "/root/ttnode.zip" ];then
@@ -408,36 +352,25 @@ echo "甜糖文件下载失败，请检查网络后再次尝试，将返回上�
 sleep 10s
 else
 unzip ttnode.zip
+unzip ./ttmanager.zip
 
 #删除可能存在的旧文件
 sleep 1s;
 rm -rf /usr/node;
-rm -f /root/tt_info.sh;
-rm -f /etc/crontabs/root;
 
 #移入甜糖所需文件
 sleep 1s;
 mv ./ttnode/node /usr/;
 sleep 1s;
+mv ./ttmanager /usr/node/
+sleep 1s;
 chmod 777 -R /usr/node;
-sleep 1s;
-mv ./ttnode/tt_info.sh /root/;
-sleep 1s;
-chmod 755 /root/tt_info.sh;
-sleep 1s;
-mv ./ttnode/root /etc/crontabs; #移入定时文件
-sleep 1s;
-chmod 600 /etc/crontabs/root;
-#sleep 1s;
-#mv -f ./ttnode/mount.start /etc/local.d; #移入开机自动挂载硬盘
-#sleep 1s;
-#chmod 755 /etc/local.d/mount.start;
-#sleep 1s;
-#rc-update add local;
+
 
 #添加开机自动执行脚本
 echo -e 'sleep 2s
 swapoff -a
+nohup /usr/node/run.sh -c /mnts/ttnode > /dev/null 2>&1 &
 ' > /etc/local.d/mount.start
 chmod +x /etc/local.d/mount.start;
 sleep 1s;
@@ -455,13 +388,7 @@ swapoff -a
 sleep 2s;
 apk update;
 sleep 2s;
-apk add libstdc++;
-sleep 2s;
-apk add net-tools;
-sleep 2s;
-apk add libqrencode;
-sleep 2s;
-apk add lsblk;
+apk add lsblk bash;
 sleep 2s;
 mkdir /mnts;
 sleep 2s;
@@ -490,9 +417,36 @@ echo "
 ======================================================================================
 
 ";
-sleep 10s;
-/root/tt_info.sh;
+/usr/node/ttmanager -g
 sleep 2s;
+nohup /usr/node/run.sh -t edsnode -c /mnts/ttnode > /dev/null 2>&1 &
+sleep 5s;
+echo "
+
+======================================================================================
+
+部署完成，请浏览器输入“ http://$(ip route get 1.2.3.4 | awk '{print $7}'):1024 ”进行二维码扫码绑定、业务选择及高质量通道选择等操作！！！
+
+首次启动可能会自动更新甜糖程序导致程序未启动从而无法访问1024后台，可手动执行
+
+命令nohup /usr/node/run.sh -t edsnode -c /mnts/ttnode > /dev/null 2>&1 &
+
+请耐心等待脚本退出！！！
+
+======================================================================================
+
+";
+sleep 20s;
+exe_path="ttmanager"
+main_id=$(pidof $exe_path)
+if [ -n "$main_id" ]; then
+   echo "$(date '+%Y-%m-%d %H:%M:%S') ttmanager进程存在" 2>&1 > /dev/null
+else
+   kill -9 $(pidof ksc-andromedae) 2>&1
+   kill -9 $(pidof ksc-kepler) 2>&1
+   kill -9 $(pidof yfnode) 2>&1
+   nohup /usr/node/run.sh -c /mnts/ttnode > /dev/null 2>&1 &
+fi
 exit 0
 
  fi
@@ -836,20 +790,17 @@ chooseTtnodeTask='ture';
 while [ $chooseTtnodeTask == 'ture' ] ;do
 read -p "
 ======================================================================================
-更新时间：2023-2-27
+更新时间：2023-9-1
 当前脚本用于  “X86的alpine系统”  安装“甜糖服务”，若选错了按Ctrl+C即可结束安装
 缓存目录：/mnts/ttnode （不支持自定义）
   请输入下列序号，进行相应操作
 	
-	1.一键部署甜糖服务（docker部署，开启高质量通道，内存≥2G，硬盘≥128G，带宽≥100Mbps）
-	2.一键部署甜糖服务（docker部署，非高质量通道，硬盘≥32G）
-	3.一键部署甜糖服务（二进制程序运行）
-	4.清除甜糖缓存（不会删除绑定信息）
-	5.删除甜糖容器
-	6.删除甜糖（二进制程序）
-	7.更新甜糖容器（高质量通道）
-	8.更新甜糖容器（非质量通道）
-	9.退出
+	1.一键部署甜糖服务（docker，浏览器输入ip:1024进行业务选择）
+	2.一键部署甜糖服务（二进制程序，浏览器输入ip:1024进行业务选择）
+	3.删除甜糖容器
+	4.删除甜糖（二进制程序）
+	5.更新甜糖容器（非质量通道）
+	6.退出
 
 ======================================================================================
 
@@ -875,43 +826,12 @@ echo "
 ";
 /usr/node/mount.sh;
 sleep 2s;
-startHighTtnodeService
-
-elif [[ ${beforeTtnodeStart} == 2 ]];then
-sleep 1s;
-startEvn
-#初始化硬盘
-/usr/node/automkfs.sh;
-sleep 1s;
-#挂载硬盘
-echo "
-
-======================================================================================
-
-正在尝试挂载硬盘，请稍等。。。
-
-======================================================================================
-
-";
-/usr/node/mount.sh;
-sleep 2s;
 startTtnodeService
 
-elif [[ ${beforeTtnodeStart} == 3 ]];then
+elif [[ ${beforeTtnodeStart} == 2 ]];then
 startOnlyTtnodeService
 
-elif [[ ${beforeTtnodeStart} == 4 ]];then
-sleep 1s;
-echo '正在停止甜糖容器...';
-docker stop ttnode >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
-sleep 1s;
-echo '删除缓存中...';
-rm -rf /mnts/ttnode/.yfnode/cache;
-sleep 1s;
-echo '正在启动甜糖容器...';
-docker start ttnode >/dev/null 2>&1 || echo '容器不存在，不影响删除缓存' 
- 
-elif [[ ${beforeTtnodeStart} == 5 ]];then
+elif [[ ${beforeTtnodeStart} == 3 ]];then
 sleep 1s;
 rm -rf /etc/local.d/mount.start;
 docker rm -f ttnode >/dev/null 2>&1 || echo 'remove ttnode container'
@@ -921,31 +841,15 @@ docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode-test:latest  >/de
 docker rmi -f tiptime/ttnode:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
 docker rmi -f tiptime/ttnode-test:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
 
-elif [[ ${beforeTtnodeStart} == 6 ]];then
+elif [[ ${beforeTtnodeStart} == 4 ]];then
 echo '正在删除甜糖服务，请稍等';
+/usr/node/ttmanager -uninstall
 sleep 2s;
 #删除相关文件
 rm -rf /usr/node;
-rm -f /root/tt_info.sh;
-rm -f /etc/crontabs/root;
-#停止甜糖服务
-ps -ef | grep ttnode | grep -v grep | awk '{print $1}' | xargs kill -9
-echo '删除甜糖服务完成，将返回上级菜单';
 sleep 2s;
 
-
-elif [[ ${beforeTtnodeStart} == 7 ]];then
-sleep 1s;
-docker rm -f ttnode  >/dev/null 2>&1 || echo 'remove ttnode container'
-docker rm -f tiptime_wsv  >/dev/null 2>&1 || echo 'remove tiptime_wsv container'
-docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
-docker rmi -f registry.cn-hangzhou.aliyuncs.com/tiptime/ttnode-test:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from ali'
-docker rmi -f tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
-docker rmi -f tiptime/ttnode-test:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
-sleep 1s;
-startHighTtnodeService
-
-elif [[ ${beforeTtnodeStart} == 8 ]];then
+elif [[ ${beforeTtnodeStart} == 5 ]];then
 sleep 1s;
 docker rm -f ttnode  >/dev/null 2>&1 || echo 'remove ttnode container'
 docker rm -f tiptime_wsv  >/dev/null 2>&1 || echo 'remove tiptime_wsv container'
@@ -976,7 +880,7 @@ choosetask='ture';
 while [ $choosetask == 'ture' ] ;do
 read -p "
 ======================================================================================
-更新时间：2023-2-27
+更新时间：2023-9-1
 当前脚本只适用于  “X86的alpine系统”  安装甜糖服务/网心容器魔方，若选错了按Ctrl+C即可结束安装
  
   请输入下列序号，进行相应操作
