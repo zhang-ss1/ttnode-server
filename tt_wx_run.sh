@@ -324,6 +324,7 @@ echo "
 ======================================================================================
 
 ";
+sync
 exit 0;
 }
 
@@ -370,6 +371,9 @@ chmod 777 -R /usr/node;
 #添加开机自动执行脚本
 echo -e 'sleep 2s
 swapoff -a
+sleep 2s
+/usr/node/mount.sh
+sleep 5s
 nohup /usr/node/run.sh -c /mnts/ttnode > /dev/null 2>&1 &
 ' > /etc/local.d/mount.start
 chmod +x /etc/local.d/mount.start;
@@ -450,7 +454,7 @@ fi
 exit 0
 
  fi
-
+sync
 }
 
 
@@ -513,6 +517,7 @@ echo "
 ======================================================================================
 
 ";
+sync
 exit 0;
 }
 
@@ -574,6 +579,7 @@ echo "
 ======================================================================================
 
 ";
+sync
 exit 0;
 }
 
@@ -827,9 +833,11 @@ echo "
 /usr/node/mount.sh;
 sleep 2s;
 startTtnodeService
+sync
 
 elif [[ ${beforeTtnodeStart} == 2 ]];then
 startOnlyTtnodeService
+sync
 
 elif [[ ${beforeTtnodeStart} == 3 ]];then
 sleep 1s;
@@ -859,6 +867,7 @@ docker rmi -f tiptime/ttnode:latest  >/dev/null 2>&1 || echo 'remove tiptime/ttn
 docker rmi -f tiptime/ttnode-test:latest >/dev/null 2>&1 || echo 'remove tiptime/ttnode from dockerhub'
 sleep 1s;
 startTtnodeService
+sync
 
 else
 echo "
